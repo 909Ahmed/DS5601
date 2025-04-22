@@ -17,6 +17,7 @@ import os, torch, wandb
 from datasets import load_dataset
 from trl import SFTTrainer, setup_chat_format
 from huggingface_hub import login
+import argparse
 
 hf_token = os.environ.get("HF_TOKEN", "")
 login(token=hf_token)
@@ -34,9 +35,9 @@ run = wandb.init(
     anonymous="allow"
 )
 
-def main():
+def main(model_path):
     
-    base_model = "909ahmed/llama-3-8b-finetuned-checkpoint-3500"
+    base_model = model_path
     dataset_name = "locuslab/TOFU"
     new_model = "llama-3-8b-forget"
     
@@ -110,7 +111,7 @@ def main():
     )
 
     from datasets import IterableDataset
-
+    
     def data_gen():
         for i in range(len(torch_format_dataset)):
             yield torch_format_dataset[i]
@@ -132,4 +133,10 @@ def main():
     model.config.use_cache = True
     
 if __name__ == '__main__':
+    
+    parser = argparse.ArgumentParser(description="Fine-tune a model")
+    parser.add_argument("--model_path", type=str, required=True, help="Path to the base model")
+    args = parser.parse_args()
+
+    model_path = args.model_path
     main()

@@ -16,6 +16,7 @@ from datasets import IterableDataset
 from huggingface_hub import login
 from trl import setup_chat_format
 import os
+import argparse
 
 
 hf_token = os.environ.get("HF_TOKEN", "")
@@ -35,7 +36,7 @@ run = wandb.init(
     anonymous="allow"
 )
 
-def main():
+def main(split):
     
     base_model = "meta-llama/Meta-Llama-3.1-8B"
     dataset_name = "locuslab/TOFU"
@@ -80,7 +81,7 @@ def main():
     
 
     max_length = 500
-    torch_format_dataset = TextDatasetQA('locuslab/TOFU', tokenizer=tokenizer, model_family = None, max_length=max_length, split='full')
+    torch_format_dataset = TextDatasetQA('locuslab/TOFU', tokenizer=tokenizer, model_family = None, max_length=max_length, split=split)
     max_steps = int(5*len(torch_format_dataset))//(2*4*1) # peak hardest coder
     
     training_arguments = TrainingArguments(
@@ -123,4 +124,9 @@ def main():
     model.config.use_cache = True
     
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Fine-tune Llama 3 8B")
+    parser.add_argument("--split", type=str, required=True, help="Dataset split to use (retain90, full)")
+    args = parser.parse_args()
+
+    split = args.split
     main()

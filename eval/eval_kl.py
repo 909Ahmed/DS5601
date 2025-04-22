@@ -8,6 +8,7 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import os
 from huggingface_hub import login
+import argparse
 
 class TextDatasetQA(Dataset):
     def __init__(self, tokenizer, max_length=512):
@@ -122,9 +123,14 @@ if __name__ == '__main__':
         raise ValueError("HF_TOKEN environment variable is not set")
     login(token=hf_token)
     
-    model_id = "909ahmed/forget-064920"
-    ref_model_id = "Aman-Rahaman-Biswas/llama-3-8b-finetuned"
-        
+    parser = argparse.ArgumentParser(description="Evaluate KL Divergence between two models")
+    parser.add_argument("--model_path", type=str, required=True, help="Path to the model to evaluate")
+    parser.add_argument("--ref_model_id", type=str, required=True, help="Path or ID of the reference model")
+    args = parser.parse_args()
+
+    model_id = args.model_path
+    ref_model_id = args.ref_model_id
+           
     model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto")
     ref_model = AutoModelForCausalLM.from_pretrained(ref_model_id, device_map="auto")
     tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
